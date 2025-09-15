@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
@@ -6,12 +7,12 @@ const Navigation = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
               <span className="text-2xl">🐱</span>
             </div>
             <span className="text-2xl font-bold text-gradient">CatmanAI</span>
-          </div>
+          </Link>
           
           {/* 導航選單 */}
           <div className="hidden md:flex items-center space-x-8">
@@ -31,12 +32,16 @@ const Navigation = () => {
           
           {/* 登入按鈕 */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-foreground hover:text-primary">
-              登入
-            </Button>
-            <Button className="btn-hero text-sm px-6 py-2">
-              開始免費試用
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" className="text-foreground hover:text-primary">
+                登入
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button className="btn-hero text-sm px-6 py-2">
+                開始免費試用
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
