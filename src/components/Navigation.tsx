@@ -1,7 +1,14 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navigation = () => {
+  const { user, userRole, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/50">
       <div className="container mx-auto px-6 py-4">
@@ -30,18 +37,44 @@ const Navigation = () => {
             </a>
           </div>
           
-          {/* 登入按鈕 */}
+          {/* 登入按鈕或用戶選單 */}
           <div className="flex items-center space-x-4">
-            <Link to="/auth">
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                登入
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button className="btn-hero text-sm px-6 py-2">
-                開始免費試用
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="ghost" className="text-foreground hover:text-primary">
+                    控制台
+                  </Button>
+                </Link>
+                {userRole === 'admin' && (
+                  <Link to="/admin">
+                    <Button variant="ghost" className="text-foreground hover:text-primary">
+                      管理員
+                    </Button>
+                  </Link>
+                )}
+                <Button 
+                  variant="ghost" 
+                  className="text-foreground hover:text-primary"
+                  onClick={handleSignOut}
+                >
+                  登出
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" className="text-foreground hover:text-primary">
+                    登入
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button className="btn-hero text-sm px-6 py-2">
+                    開始免費試用
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
