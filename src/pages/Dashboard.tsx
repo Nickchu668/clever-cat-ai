@@ -14,7 +14,6 @@ import { ExternalLink, Lock, Unlock } from 'lucide-react';
 interface ContentSection {
   id: string;
   name: string;
-  password: string;
   is_visible: boolean;
 }
 

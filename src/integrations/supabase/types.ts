@@ -55,13 +55,41 @@ export type Database = {
           },
         ]
       }
+      content_section_secrets: {
+        Row: {
+          created_at: string
+          password: string
+          section_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          password: string
+          section_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          password?: string
+          section_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_section_secrets_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: true
+            referencedRelation: "content_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_sections: {
         Row: {
           created_at: string
           id: string
           is_visible: boolean
           name: string
-          password: string
           updated_at: string
         }
         Insert: {
@@ -69,7 +97,6 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name: string
-          password: string
           updated_at?: string
         }
         Update: {
@@ -77,7 +104,6 @@ export type Database = {
           id?: string
           is_visible?: boolean
           name?: string
-          password?: string
           updated_at?: string
         }
         Relationships: []
