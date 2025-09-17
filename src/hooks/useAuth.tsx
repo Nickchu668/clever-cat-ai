@@ -38,31 +38,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user role asynchronously
+          // Defer role fetching to avoid deadlocks and ensure accurate role
           setTimeout(async () => {
             try {
-              const { data: roleData } = await supabase
+              const { data: roles, error } = await supabase
                 .from('user_roles')
                 .select('role')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              setUserRole(roleData?.role || 'member');
-            } catch (error) {
-              console.error('Error fetching user role:', error);
+                .eq('user_id', session.user.id);
+
+              if (error) throw error;
+
+              const hasAdmin = Array.isArray(roles) && roles.some((r: any) => r.role === 'admin');
+              setUserRole(hasAdmin ? 'admin' : 'member');
+            } catch (err) {
+              console.error('Error fetching user roles:', err);
               setUserRole('member');
+            } finally {
+              setLoading(false);
             }
           }, 0);
         } else {
           setUserRole(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -70,7 +73,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+
+      if (session?.user) {
+        // Also fetch roles on initial load
+        setTimeout(async () => {
+          try {
+            const { data: roles, error } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user!.id);
+
+            if (error) throw error;
+
+            const hasAdmin = Array.isArray(roles) && roles.some((r: any) => r.role === 'admin');
+            setUserRole(hasAdmin ? 'admin' : 'member');
+          } catch (err) {
+            console.error('Error fetching user roles (init):', err);
+            setUserRole('member');
+          } finally {
+            setLoading(false);
+          }
+        }, 0);
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
