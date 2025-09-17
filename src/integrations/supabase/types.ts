@@ -168,6 +168,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_password: {
+        Args: { password_text: string }
+        Returns: string
+      }
+      is_admin_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      verify_section_password: {
+        Args: { password_input: string; section_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "member"

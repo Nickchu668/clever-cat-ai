@@ -85,30 +85,50 @@ const Dashboard = () => {
     }
   };
 
-  const handlePasswordSubmit = (sectionId: string, inputPassword: string) => {
-    const section = sections.find(s => s.section.id === sectionId);
-    if (!section) return;
+  const handlePasswordSubmit = async (sectionId: string, inputPassword: string) => {
+    try {
+      // Use the secure password verification function
+      const { data: isValid, error } = await supabase
+        .rpc('verify_section_password', {
+          section_id_param: sectionId,
+          password_input: inputPassword
+        });
 
-    const validPasswords = section.section.name === 'Meta 學員專區' 
-      ? ['meta', 'symptom'] 
-      : ['symptom'];
+      if (error) {
+        toast({
+          title: "驗證失敗",
+          description: "密碼驗證時發生錯誤",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    if (validPasswords.includes(inputPassword)) {
-      setSections(prev => 
-        prev.map(s => 
-          s.section.id === sectionId 
-            ? { ...s, unlocked: true }
-            : s
-        )
-      );
+      if (isValid) {
+        setSections(prev => 
+          prev.map(s => 
+            s.section.id === sectionId 
+              ? { ...s, unlocked: true }
+              : s
+          )
+        );
+        
+        const section = sections.find(s => s.section.id === sectionId);
+        toast({
+          title: "解鎖成功",
+          description: `${section?.section.name || '專區'} 已解鎖！`,
+        });
+      } else {
+        toast({
+          title: "密碼錯誤",
+          description: "請輸入正確的密碼",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('Password verification error:', err);
       toast({
-        title: "解鎖成功",
-        description: `${section.section.name} 已解鎖！`,
-      });
-    } else {
-      toast({
-        title: "密碼錯誤",
-        description: "請輸入正確的密碼",
+        title: "驗證失敗", 
+        description: "系統錯誤，請稍後再試",
         variant: "destructive",
       });
     }

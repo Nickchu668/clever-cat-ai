@@ -170,8 +170,11 @@ const Admin = () => {
   const saveSection = async (formData: FormData) => {
     const name = formData.get('name') as string;
     const isVisible = formData.get('is_visible') === 'on';
+    const password = formData.get('password') as string;
 
     try {
+      let sectionId = editingSection?.id;
+      
       if (editingSection) {
         const { error } = await supabase
           .from('content_sections')
@@ -181,12 +184,34 @@ const Admin = () => {
         if (error) throw error;
         toast({ title: "專區已更新" });
       } else {
-        const { error } = await supabase
+        const { data: newSection, error } = await supabase
           .from('content_sections')
-          .insert([{ name, is_visible: isVisible }]);
+          .insert([{ name, is_visible: isVisible }])
+          .select()
+          .single();
 
         if (error) throw error;
+        sectionId = newSection.id;
         toast({ title: "專區已新增" });
+      }
+
+      // Handle password update/creation if provided
+      if (password && sectionId) {
+        const { error: passwordError } = await supabase
+          .from('content_section_secrets')
+          .upsert({ 
+            section_id: sectionId, 
+            password: password 
+          });
+
+        if (passwordError) {
+          console.error('Password save error:', passwordError);
+          toast({
+            title: "密碼設定失敗",
+            description: "專區已保存但密碼設定失敗",
+            variant: "destructive",
+          });
+        }
       }
 
       setIsSectionDialogOpen(false);
@@ -413,25 +438,37 @@ const Admin = () => {
                         const formData = new FormData(e.currentTarget);
                         saveSection(formData);
                       }}>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="name">專區名稱</Label>
-                            <Input
-                              id="name"
-                              name="name"
-                              defaultValue={editingSection?.name || ''}
-                              required
-                            />
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="is_visible"
-                              name="is_visible"
-                              defaultChecked={editingSection?.is_visible ?? true}
-                            />
-                            <Label htmlFor="is_visible">公開顯示</Label>
-                          </div>
-                        </div>
+                         <div className="space-y-4">
+                           <div>
+                             <Label htmlFor="name">專區名稱</Label>
+                             <Input
+                               id="name"
+                               name="name"
+                               defaultValue={editingSection?.name || ''}
+                               required
+                             />
+                           </div>
+                           <div>
+                             <Label htmlFor="password">專區密碼（選填）</Label>
+                             <Input
+                               id="password"
+                               name="password"
+                               type="password"
+                               placeholder="設定專區解鎖密碼"
+                             />
+                             <p className="text-xs text-muted-foreground mt-1">
+                               留空表示不需要密碼即可查看此專區
+                             </p>
+                           </div>
+                           <div className="flex items-center space-x-2">
+                             <Switch
+                               id="is_visible"
+                               name="is_visible"
+                               defaultChecked={editingSection?.is_visible ?? true}
+                             />
+                             <Label htmlFor="is_visible">公開顯示</Label>
+                           </div>
+                         </div>
                         <DialogFooter className="mt-6">
                           <Button type="submit">
                             {editingSection ? '更新' : '新增'}
