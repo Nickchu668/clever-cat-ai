@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Clean up URL hash after OAuth redirect
+        if (event === 'SIGNED_IN' && window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        
         if (session?.user) {
           // Defer role fetching to avoid deadlocks and ensure accurate role
           setTimeout(async () => {
