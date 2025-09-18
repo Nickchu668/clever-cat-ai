@@ -135,7 +135,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Use the correct domain based on environment
+      const getRedirectUrl = () => {
+        if (window.location.hostname === 'nickchu668.github.io') {
+          return 'https://nickchu668.github.io/clever-cat-ai/';
+        }
+        return `${window.location.origin}/`;
+      };
+      
+      const redirectUrl = getRedirectUrl();
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -167,7 +175,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      // Use the correct domain based on environment
+      const getRedirectUrl = () => {
+        if (window.location.hostname === 'nickchu668.github.io') {
+          return 'https://nickchu668.github.io/clever-cat-ai/';
+        }
+        return `${window.location.origin}/`;
+      };
+      
+      const redirectUrl = getRedirectUrl();
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
