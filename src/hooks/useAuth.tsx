@@ -42,11 +42,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Clean up URL hash after OAuth redirect
-        if (event === 'SIGNED_IN' && window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
-        
         if (session?.user) {
           // Defer role fetching to avoid deadlocks and ensure accurate role
           setTimeout(async () => {
@@ -135,15 +130,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      // Use the correct domain based on environment
-      const getRedirectUrl = () => {
-        if (window.location.hostname === 'nickchu668.github.io') {
-          return 'https://nickchu668.github.io/clever-cat-ai/';
-        }
-        return `${window.location.origin}/`;
-      };
-      
-      const redirectUrl = getRedirectUrl();
+      const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -175,15 +162,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signInWithGoogle = async () => {
     try {
-      // Use the correct domain based on environment
-      const getRedirectUrl = () => {
-        if (window.location.hostname === 'nickchu668.github.io') {
-          return 'https://nickchu668.github.io/clever-cat-ai/';
-        }
-        return `${window.location.origin}/`;
-      };
-      
-      const redirectUrl = getRedirectUrl();
+      const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
