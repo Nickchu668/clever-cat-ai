@@ -35,6 +35,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Centralized redirect URL to ensure OAuth always returns to GitHub Pages
+  const getAuthRedirectUrl = () => {
+    const ghBase = 'https://nickchu668.github.io/clever-cat-ai/';
+    if (typeof window === 'undefined') return ghBase;
+    const origin = window.location.origin;
+    const base = import.meta.env.BASE_URL || '/';
+    const current = `${origin}${base}`;
+
+    // If running inside Lovable preview or localhost, force redirect to GitHub Pages
+    if (origin.includes('lovable.app') || origin.includes('localhost')) return ghBase;
+
+    // If already on GitHub Pages, keep using the GitHub Pages URL
+    if (origin.includes('nickchu668.github.io')) return ghBase;
+
+    // Fallback to current origin+base
+    return current;
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -139,8 +157,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      const base = import.meta.env.BASE_URL || "/";
-      const redirectUrl = `${window.location.origin}${base}`;
+      const redirectUrl = getAuthRedirectUrl();
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -172,8 +189,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signInWithGoogle = async () => {
     try {
-      const base = import.meta.env.BASE_URL || "/";
-      const redirectUrl = `${window.location.origin}${base}`;
+      const redirectUrl = getAuthRedirectUrl();
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
