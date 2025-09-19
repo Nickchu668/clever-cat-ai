@@ -41,6 +41,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Remove OAuth hash fragments after redirect (GitHub Pages)
+        try {
+          if (typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('access_token')) {
+            const base = import.meta.env.BASE_URL || '/';
+            const cleanPath = base.endsWith('/') ? base : `${base}/`;
+            window.history.replaceState(null, '', cleanPath);
+          }
+        } catch {}
         
         if (session?.user) {
           // Defer role fetching to avoid deadlocks and ensure accurate role
@@ -130,7 +139,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const base = import.meta.env.BASE_URL || "/";
+      const redirectUrl = `${window.location.origin}${base}`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -162,7 +172,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const base = import.meta.env.BASE_URL || "/";
+      const redirectUrl = `${window.location.origin}${base}`;
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
